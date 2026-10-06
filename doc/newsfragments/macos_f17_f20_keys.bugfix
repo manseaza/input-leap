@@ -1,0 +1,1 @@
+Added missing F17-F20 key mappings on macOS, so these keys sent from other platforms (e.g. a Windows server) are now generated on macOS clients.
