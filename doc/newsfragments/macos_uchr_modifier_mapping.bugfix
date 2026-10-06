@@ -1,0 +1,1 @@
+Fixed macOS clients treating right Shift as NumLock when building the keyboard map. Shifted keys were synthesized with a keypad Clear press around them, which broke input method composition (e.g. Korean double consonants such as ㅆ came out as a separate character).

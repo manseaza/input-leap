@@ -35,6 +35,29 @@ static const std::uint32_t s_launchpadVK = 131;
 
 static const std::uint32_t s_osxNumLock = 1 << 16;
 
+// Maps a Carbon EventModifiers mask (as used to index uchr modifier tables)
+// to a KeyModifierMask.  Right-hand modifiers count as their left-hand ones.
+static KeyModifierMask mapModifiersFromCarbon(std::uint32_t mask)
+{
+    KeyModifierMask outMask = 0;
+    if ((mask & (shiftKey | rightShiftKey)) != 0) {
+        outMask |= KeyModifierShift;
+    }
+    if ((mask & (controlKey | rightControlKey)) != 0) {
+        outMask |= KeyModifierControl;
+    }
+    if ((mask & (optionKey | rightOptionKey)) != 0) {
+        outMask |= KeyModifierAlt;
+    }
+    if ((mask & cmdKey) != 0) {
+        outMask |= KeyModifierSuper;
+    }
+    if ((mask & alphaLock) != 0) {
+        outMask |= KeyModifierCapsLock;
+    }
+    return outMask;
+}
+
 static const std::uint32_t s_int4VK = 0x8a; // international4
 static const std::uint32_t s_int5VK = 0x8b; // international5
 
@@ -753,9 +776,11 @@ bool OSXKeyState::getKeyMap(inputleap::KeyMap& keyMap, std::int32_t group,
             }
 
             // now add a key entry for each key/required modifier pair.
-            item.m_sensitive = mapModifiersFromOSX(sensitive << 16);
+            // the uchr modifier index is the high byte of a Carbon
+            // EventModifiers mask, not a CGEventFlags mask.
+            item.m_sensitive = mapModifiersFromCarbon(sensitive << 8);
             for (auto k = required.begin(); k != required.end(); ++k) {
-                item.m_required = mapModifiersFromOSX(*k << 16);
+                item.m_required = mapModifiersFromCarbon(*k << 8);
                 keyMap.addKeyEntry(item);
             }
         }
